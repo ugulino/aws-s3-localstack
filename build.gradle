@@ -1,7 +1,15 @@
 plugins {
     id 'java'
+    id 'distribution'
+    id 'java-library-distribution'
     id 'jacoco'
 }
+
+// Java plugin configuration
+// ---------------------------------------------------
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 group 'org.ugulino.aws.s3'
 version '1.0-SNAPSHOT'
 
@@ -10,10 +18,10 @@ repositories {
 }
 
 dependencies {
-    implementation platform('software.amazon.awssdk:bom:2.15.0')
-    implementation 'software.amazon.awssdk:s3'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.238'
+    implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.238'
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
+    implementation 'com.amazonaws:aws-lambda-java-events:3.11.0'
 }
 
 test {
@@ -33,5 +41,24 @@ jacocoTestReport {
         xml.required = false
         csv.required = false
         html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+distributions {
+    main {
+        distributionBaseName = 'aws-s3-localstack'
+        contents {
+            from 'bin/classes/'
+            from 'libs/'
+            from 'src/dist'
+        }
+    }
+}
+
+task buildZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
     }
 }
